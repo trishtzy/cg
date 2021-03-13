@@ -2,12 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
-	"net/http"
+	"os"
+	"strings"
 
-	"github.com/trishtzy/cg/model"
-
+	elasticsearch "github.com/elastic/go-elasticsearch/v7"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -15,34 +14,48 @@ import (
 func main() {
 	// Enable line numbers in logging
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	var (
+		r map[string]interface{}
+	)
 
 	// Connect to DB and migrate model
 	dsn := "host=localhost user=countryadmin password=password dbname=countrydb port=5432 sslmode=disable TimeZone=Asia/Singapore"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
-	db.AutoMigrate(&model.Country{})
-
-	// Seed data
-	resp, err := http.Get("https://gist.githubusercontent.com/rusty-key/659db3f4566df459bd59c8a53dc9f71f/raw/4127f9550ef063121c564025f6d27dceeb279623/counties.json")
-	if err != nil {
-		log.Println(err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(err)
-	}
-	var countries []model.Country
-	err = json.Unmarshal(body, &countries)
-	if err != nil {
-		log.Println(err)
+	if os.Getenv("SETUP") == "true" {
+		err = db_setup(db)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
-	result := db.Create(&countries)
-	if result.Error != nil {
-		log.Println(result.Error.Error())
+	// cfg := elasticsearch.Config{
+	// 	Addresses: []string{
+	// 		"http://localhost:9200",
+	// 	},
+	// }
+	es, _ := elasticsearch.NewDefaultClient()
+	if err != nil {
+		log.Fatalf("Error creating the client: %s", err)
 	}
-	log.Println("Success")
+	res, err := es.Info()
+	if err != nil {
+		log.Fatalf("Error getting response: %s", err)
+	}
+	defer res.Body.Close()
+	// Check response status
+	if res.IsError() {
+		log.Fatalf("Error: %s", res.String())
+	}
+	// Deserialize the response into a map.
+	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
+		log.Fatalf("Error parsing the response body: %s", err)
+	}
+	// Print client and server version numbers.
+	log.Printf("Client: %s", elasticsearch.Version)
+	log.Printf("Server: %s", r["version"].(map[string]interface{})["number"])
+	log.Println(strings.Repeat("~", 37))
+
 }
