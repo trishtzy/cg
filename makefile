@@ -9,3 +9,6 @@ destroy:
 
 db:
 	docker exec -it country-pg bin/bash
+
+run:
+	go run main.go db.go
