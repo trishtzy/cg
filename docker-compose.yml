@@ -1,0 +1,40 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:9.6.21
+    restart: always
+    container_name: country-pg
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=countrydb
+      - POSTGRES_USER=countryadmin
+      - POSTGRES_PASSWORD=password
+
+  pgweb:
+    image: sosedoff/pgweb:0.11.7
+    container_name: country-pgweb
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=postgres://countryadmin:password@db:5432/countrydb?sslmode=disable
+    depends_on:
+      - db
+
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.2
+    container_name: country-es01
+    environment:
+      - node.name=es01
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+volumes:
+  data01:
+    driver: local
