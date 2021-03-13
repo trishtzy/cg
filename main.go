@@ -41,5 +41,8 @@ func main() {
 	}
 
 	result := db.Create(&countries)
-	log.Println(result)
+	if result.Error != nil {
+		log.Println(result.Error.Error())
+	}
+	log.Println("Success")
 }
