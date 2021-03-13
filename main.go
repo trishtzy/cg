@@ -76,7 +76,7 @@ func main() {
 				log.Fatalln(err)
 			}
 			req := esapi.IndexRequest{
-				Index:        "testa",
+				Index:        "country",
 				DocumentType: "search_as_you_type",
 				DocumentID:   strconv.FormatUint(uint64(country.ID), 10),
 				Body:         strings.NewReader(string(b)),
