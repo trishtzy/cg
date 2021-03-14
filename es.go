@@ -19,7 +19,13 @@ func es_setup() error {
 		r  map[string]interface{}
 		wg sync.WaitGroup
 	)
-	es, err := elasticsearch.NewDefaultClient()
+	cfg := elasticsearch.Config{
+		Addresses: []string{
+			"http://es:9200",
+			"http://localhost:9200",
+		},
+	}
+	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		// log.Fatalf("Error creating the client: %s", err)
 		return err

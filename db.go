@@ -16,7 +16,7 @@ var DB *gorm.DB
 func db_conn() (*gorm.DB, error) {
 	// Connect to DB and migrate model
 	var err error
-	dsn := "host=localhost user=countryadmin password=password dbname=countrydb port=5432 sslmode=disable TimeZone=Asia/Singapore"
+	dsn := "host=db user=countryadmin password=password dbname=countrydb port=5432 sslmode=disable TimeZone=Asia/Singapore"
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)

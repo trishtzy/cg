@@ -35,6 +35,17 @@ services:
       - "9200:9200"
       - "9300:9300"
 
+  web:
+    container_name: country-web
+    build: .
+    environment:
+      - SETUP=true
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - es
+
 volumes:
   data01:
     driver: local
