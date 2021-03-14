@@ -26,3 +26,11 @@ or
 $ go build -o main
 $ ./main
 ```
+
+### API
+
+- GET localhost:8080/countries
+
+- Open "http://localhost:8081/" in browser to view database UI
+
+- localhost:9200 for Elasticsearch API
