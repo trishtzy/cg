@@ -7,8 +7,5 @@ setup:
 destroy:
 	docker-compose down --remove-orphans
 
-db:
-	docker exec -it country-pg bin/bash
-
 run:
 	go run main.go db.go es.go server.go
