@@ -68,36 +68,39 @@ func main() {
 
 	for i, country := range countries {
 		wg.Add(1)
-		go func(i int, country model.Country) {
-			defer wg.Done()
-
-			b, err := json.Marshal(country)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			req := esapi.IndexRequest{
-				Index:        "country",
-				DocumentType: "search_as_you_type",
-				DocumentID:   strconv.FormatUint(uint64(country.ID), 10),
-				Body:         strings.NewReader(string(b)),
-				Refresh:      "true",
-			}
-
-			res, err := req.Do(context.Background(), es)
-			if err != nil {
-				log.Fatalf("Error getting response while indexing: %s", err)
-			}
-			defer res.Body.Close()
-
-			if res.IsError() {
-				log.Printf("[%s] Error indexing document ID=%d", res.Status(), country.ID)
-			} else {
-				if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
-					log.Printf("Error parsing indexRequest response body: %s", err)
-				}
-				log.Printf("%v", r)
-			}
-		}(i, country)
+		go indexCountry(i, country, &wg, es)
 	}
 	wg.Wait()
+}
+
+func indexCountry(i int, country model.Country, wg *sync.WaitGroup, es *elasticsearch.Client) {
+	defer wg.Done()
+
+	b, err := json.Marshal(country)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	req := esapi.IndexRequest{
+		Index:        "country",
+		DocumentType: "search_as_you_type",
+		DocumentID:   strconv.FormatUint(uint64(country.ID), 10),
+		Body:         strings.NewReader(string(b)),
+		Refresh:      "true",
+	}
+
+	res, err := req.Do(context.Background(), es)
+	if err != nil {
+		log.Fatalf("Error getting response while indexing: %s", err)
+	}
+	defer res.Body.Close()
+
+	var r map[string]interface{}
+	if res.IsError() {
+		log.Printf("[%s] Error indexing document ID=%d", res.Status(), country.ID)
+	} else {
+		if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
+			log.Printf("Error parsing indexRequest response body: %s", err)
+		}
+		log.Printf("%v", r)
+	}
 }
