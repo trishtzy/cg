@@ -5,7 +5,7 @@ setup:
 	docker-compose -p $(PROJECT_NAME) up -d
 
 destroy:
-	docker-compose down --remove-orphans
+	docker-compose -p $(PROJECT_NAME) down --remove-orphans
 
 run:
 	go run main.go db.go es.go server.go
