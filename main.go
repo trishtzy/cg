@@ -14,6 +14,7 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
+	defer db_close()
 
 	if os.Getenv("SETUP") == "true" {
 		err = db_setup()
