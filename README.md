@@ -20,11 +20,20 @@ $ docker ps
 # countrypg - postgres db
 ```
 
-or
+Once it's ready, go into es01 bash.
 
 ```sh
-$ go build -o main
-$ ./main
+$ docker exec -it country-es01 bash
+$ vi config/elasticsearch.yml # or use your preferred editor
+```
+
+Add the cors config as shown in the last two lines here:
+
+```yml
+cluster.name: "docker-cluster"
+network.host: 0.0.0.0
+http.cors.enabled: true
+http.cors.allow-origin: "*"
 ```
 
 ### API
